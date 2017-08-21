@@ -3,11 +3,16 @@ package com.example.niriko.spritztestapp;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
-import android.graphics.Color;
+import android.os.Handler;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.Html;
+import android.view.Gravity;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.Button;
 
@@ -25,14 +30,13 @@ public class MainActivity extends AppCompatActivity {
     ClipboardManager paste;
 
     int count=-1;
-    int pivot;
+    int pivot = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        CustomView customView = new CustomView(this);
         final TextView textspace = (TextView)findViewById(R.id.textspace);
         final EditText editText = (EditText) findViewById(R.id.editText);
         final Button button = (Button)findViewById(R.id.button);
@@ -68,78 +72,62 @@ public class MainActivity extends AppCompatActivity {
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                wordsPerMinute.setEnabled(false);
                 String text = String.valueOf(editText.getText().toString());
                 final String[] words = text.split("\\s+");
 
-                for (int i = 0; i < words.length; i++) {
-                    words[i] = words[i].replaceAll("[^\\w]", "");
-                    words[i] = words[i].toLowerCase();
-                }
-
-                if (words!=null && words.length>0) {
-                    final int wordNumber = words.length;
+                if (words.length>0) {
                     String wordsPerM = String.valueOf(wordsPerMinute.getText().toString());
                     if (wordsPerM!=null && wordsPerM.length()>0) {
                         final int wpm = Integer.parseInt(wordsPerM);
-                        Thread t = new Thread() {
+
+                        final Handler handler = new Handler();
+                        handler.post(new Runnable() {
                             @Override
                             public void run() {
-                                while (!isInterrupted()) {
-                                    try {
-                                        Thread.sleep(1000 * 60 / wpm);
-                                        runOnUiThread(new Runnable() {
-                                            @Override
-                                            public void run() {
-                                                count++;
+                                count++;
+                                handler.postDelayed(this, 1000 * 60 / wpm);
 
-                                                switch (words[count].length())
-                                                {
-                                                    case 0:
-                                                    case 1:
-                                                        pivot = 0;
-                                                        break;
-                                                    case 2:
-                                                    case 3:
-                                                    case 4:
-                                                    case 5:
-                                                        pivot = 1;
-                                                        break;
-                                                    case 6:
-                                                    case 7:
-                                                    case 8:
-                                                    case 9:
-                                                        pivot = 2;
-                                                        break;
-                                                    case 10:
-                                                    case 11:
-                                                    case 12:
-                                                    case 13:
-                                                        pivot = 3;
-                                                        break;
-                                                    default:
-                                                        pivot = 4;
-                                                };
-                                                String coloredWord = Integer.toString(pivot);
+                                final String[] word = words[count].split("(?!^)");
 
-                                                textspace.setText(words[count]);
-                                            }
-                                        });
-                                    } catch (InterruptedException e) {
-                                        e.printStackTrace();
-                                    }
+                                switch (word.length) {
+                                    case 0:
+                                    case 1:
+                                        pivot = 0;
+                                        break;
+                                    case 2:
+                                    case 3:
+                                    case 4:
+                                    case 5:
+                                        pivot = 1;
+                                        break;
+                                    case 6:
+                                    case 7:
+                                    case 8:
+                                    case 9:
+                                        pivot = 2;
+                                        break;
+                                    case 10:
+                                    case 11:
+                                    case 12:
+                                    case 13:
+                                        pivot = 3;
+                                        break;
+                                    default:
+                                        pivot = 4;
                                 }
+                                String newString = words[count].replaceFirst(word[pivot], "<font color='#ff0000'>" + word[pivot] + "</font>");
+                                textspace.setText(Html.fromHtml(newString));
                             }
-                        };
-                        t.start();
+                        });
                     }else {
                         textspace.setText("?words per minute?");
                     }
+
                 }else{
                     textspace.setText("nothing to read");
                 }
             }
         });
-
-
     }
 }

@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">SpritzTestApp</string>
+    <string name="start_reading">START READING</string>
+    <string name="paste_text">PASTE TEXT</string>
+    <string name="erase_text">ERASE TEXT</string>
+    <string name="words_per_minute">words per minute</string>
+    <string name="number_per_minute">150</string>
 </resources>
