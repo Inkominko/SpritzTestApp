@@ -4,32 +4,19 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.os.Handler;
-import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Html;
-import android.view.Gravity;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.EditText;
-import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.Button;
 
-import com.example.niriko.spritztestapp.views.CustomView;
-
 public class MainActivity extends AppCompatActivity {
 
-    CustomView customView;
-    TextView textspace;
-    EditText editText;
-    Button button;
-    Button button2;
-    Button button3;
-    EditText wordsPerMinute;
     ClipboardManager paste;
 
-    int count=-1;
+    int count=0;
     int pivot = 0;
 
     @Override
@@ -55,7 +42,7 @@ public class MainActivity extends AppCompatActivity {
                 ClipData pasteData = paste.getPrimaryClip();
                 ClipData.Item item = pasteData.getItemAt(0);
                 String wholeText = item.getText().toString();
-                editText.setText(wholeText);
+                editText.setText(" " + wholeText);
             }
         });
 
@@ -73,20 +60,31 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 wordsPerMinute.setEnabled(false);
+                button.setEnabled(false);
+                buttonErase.setEnabled(false);
                 String text = String.valueOf(editText.getText().toString());
                 final String[] words = text.split("\\s+");
 
                 if (words.length>0) {
-                    String wordsPerM = String.valueOf(wordsPerMinute.getText().toString());
+                    final String wordsPerM = String.valueOf(wordsPerMinute.getText().toString());
                     if (wordsPerM!=null && wordsPerM.length()>0) {
                         final int wpm = Integer.parseInt(wordsPerM);
 
                         final Handler handler = new Handler();
+
                         handler.post(new Runnable() {
                             @Override
                             public void run() {
                                 count++;
                                 handler.postDelayed(this, 1000 * 60 / wpm);
+
+                                if (count == words.length) {
+                                    button.setEnabled(true);
+                                    wordsPerMinute.setEnabled(true);
+                                    buttonErase.setEnabled(true);
+                                    count = 0;
+                                    handler.removeCallbacksAndMessages(null);
+                                }
 
                                 final String[] word = words[count].split("(?!^)");
 
@@ -118,6 +116,7 @@ public class MainActivity extends AppCompatActivity {
                                 }
                                 String newString = words[count].replaceFirst(word[pivot], "<font color='#ff0000'>" + word[pivot] + "</font>");
                                 textspace.setText(Html.fromHtml(newString));
+
                             }
                         });
                     }else {
